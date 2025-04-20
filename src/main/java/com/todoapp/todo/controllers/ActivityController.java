@@ -7,6 +7,8 @@ import com.todoapp.todo.services.UserService;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
+import org.springframework.security.core.annotation.AuthenticationPrincipal;
+import org.springframework.security.oauth2.jwt.Jwt;
 import org.springframework.web.bind.annotation.*;
 
 import java.util.List;
@@ -23,18 +25,18 @@ public class ActivityController {
 
     // Save or update an activity
     @PostMapping("/activities")
-    private void saveActivity(@RequestBody List<Activity> activities) {
+    private void saveActivity(@RequestBody List<Activity> activities,@AuthenticationPrincipal Jwt jwt) {
         activityService.saveActivity(activities);
     }
 
     @GetMapping("/activities")
-    private List<Activity> fetchActivities() {
+    private List<Activity> fetchActivities(@AuthenticationPrincipal Jwt jwt) {
         return activityService.fetchActivities();
     }
 
     // Get activity by ID
     @GetMapping("/activities/{id}")
-    private Activity getActivityById(@PathVariable int id) {
+    private Activity getActivityById(@PathVariable int id,@AuthenticationPrincipal Jwt jwt) {
         return activityService.getActivityById(id);
     }
 
@@ -46,7 +48,7 @@ public class ActivityController {
 
     // Create multiple activities for a user
     @PostMapping("/activities/user/{username}")
-    private void saveActivitiesForUser(@PathVariable String username, @RequestBody List<Activity> activities) {
+    private void saveActivitiesForUser(@PathVariable String username, @RequestBody List<Activity> activities,@AuthenticationPrincipal Jwt jwt) {
         User user = userService.findByUsername(username); // Fetch user by username
         if (user != null) {
             for (Activity activity : activities) {
@@ -57,7 +59,7 @@ public class ActivityController {
     }
 
     @GetMapping("/activities/user/{username}")
-    private List<Activity> getActivitiesByUsername(@PathVariable String username) {
+    private List<Activity> getActivitiesByUsername(@PathVariable String username,@AuthenticationPrincipal Jwt jwt) {
         User user = userService.findByUsername(username);
         if (user != null) {
             return activityService.getActivitiesByUser(user);
@@ -67,7 +69,7 @@ public class ActivityController {
     }
 
     @PatchMapping("/activities/{id}")
-    public Activity updateActivityPartial(@PathVariable int id, @RequestBody Activity updatedActivity) {
+    public Activity updateActivityPartial(@PathVariable int id, @RequestBody Activity updatedActivity,@AuthenticationPrincipal Jwt jwt) {
         Activity existingActivity = activityService.getActivityById(id);
         if (existingActivity != null) {
             if (updatedActivity.getTitle() != null)
@@ -83,7 +85,7 @@ public class ActivityController {
     }
 
     @DeleteMapping("/activities/{id}")
-    public ResponseEntity<String> deleteActivity(@PathVariable int id) {
+    public ResponseEntity<String> deleteActivity(@PathVariable int id,@AuthenticationPrincipal Jwt jwt) {
         try {
             activityService.deleteActivity(id);
             return ResponseEntity.ok("Activity deleted successfully");
